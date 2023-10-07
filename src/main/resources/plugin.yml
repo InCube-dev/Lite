@@ -1,0 +1,5 @@
+name: lite
+version: '${project.version}'
+main: ru.incube.lite.main
+api-version: '1.20'
+load: STARTUP
