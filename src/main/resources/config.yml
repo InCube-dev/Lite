@@ -1,0 +1,13 @@
+# Информация о базе данных BattlePass (InCubePass)
+BPdatabase:
+  host:
+  port:
+  database:
+  username:
+  password:
+  # Название таблицы. Не путать с названием базы данных!
+  table:
+  # Использовать SSL соединение?
+  useSSL: true
+  # Переподключаться к базе данных при потере соединения?
+  autoReconnect: true
