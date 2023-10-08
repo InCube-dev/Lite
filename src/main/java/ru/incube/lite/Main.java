@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 @Getter
 @SuppressWarnings({"deprecation", "ConstantConditions"})
 public final class Main extends JavaPlugin {
-    public static final Logger log = Logger.getLogger("Minecraft");
+    public static final Logger log = Logger.getLogger("litePlugin");
     public static Main plugin;
     private final String version = this.getDescription().getVersion();
 
