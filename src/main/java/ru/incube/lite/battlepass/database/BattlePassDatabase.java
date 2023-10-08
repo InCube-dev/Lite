@@ -1,6 +1,7 @@
 package ru.incube.lite.battlepass.database;
 
 import lombok.Data;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import ru.incube.lite.Main;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Data
+@SuppressWarnings("UnusedReturnValue")
 public class BattlePassDatabase {
     private static final String HOST = Main.plugin.getConfig().getString("BPdatabase.host");
     private static final String PORT = Main.plugin.getConfig().getString("BPdatabase.port");
@@ -147,6 +149,26 @@ public class BattlePassDatabase {
     }
 
     /**
+     * Получить оплачен ли БП игрока
+     *
+     * @param player Игрок
+     * @return CompletableFuture Получение статуса
+     */
+    public CompletableFuture<Boolean> isPaid(Player player) {
+        return CompletableFuture.supplyAsync(() -> {
+            UUID uuid = player.getUniqueId();
+            String isPaidSQL = "SELECT isPaid FROM " + TABLE + " WHERE uuid = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(isPaidSQL)) {
+                statement.setString(1, uuid.toString());
+                return statement.executeQuery().getBoolean("isPaid");
+            } catch (SQLException e) {
+                Main.log.severe("Ошибка получения статуса оплаты игрока " + player.getName() + ": " + e.getMessage());
+                return false;
+            }
+        });
+    }
+
+    /**
      * Установить бесплатный уровень БП игроку
      *
      * @param player Игрок
@@ -163,6 +185,26 @@ public class BattlePassDatabase {
                 statement.executeUpdate();
             } catch (SQLException e) {
                 Main.log.severe("Ошибка установки бесплатного уровня БП игроку " + player.getName() + ": " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Получить бесплатный уровень БП игрока
+     *
+     * @param player Игрок
+     * @return CompletableFuture Получение уровня
+     */
+    public CompletableFuture<Integer> getFreeLevel(Player player) {
+        return CompletableFuture.supplyAsync(() -> {
+            UUID uuid = player.getUniqueId();
+            String getFreeLevelSQL = "SELECT freeBattlePassLevel FROM " + TABLE + " WHERE uuid = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(getFreeLevelSQL)) {
+                statement.setString(1, uuid.toString());
+                return statement.executeQuery().getInt("freeBattlePassLevel");
+            } catch (SQLException e) {
+                Main.log.severe("Ошибка получения бесплатного уровня БП игрока " + player.getName() + ": " + e.getMessage());
+                return 0;
             }
         });
     }
@@ -189,6 +231,26 @@ public class BattlePassDatabase {
     }
 
     /**
+     * Получить оплаченный уровень БП игрока
+     *
+     * @param player Игрок
+     * @return CompletableFuture Получение уровня
+     */
+    public CompletableFuture<Integer> getPaidLevel(Player player) {
+        return CompletableFuture.supplyAsync(() -> {
+            UUID uuid = player.getUniqueId();
+            String getPaidLevelSQL = "SELECT paidBattlePassLevel FROM " + TABLE + " WHERE uuid = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(getPaidLevelSQL)) {
+                statement.setString(1, uuid.toString());
+                return statement.executeQuery().getInt("paidBattlePassLevel");
+            } catch (SQLException e) {
+                Main.log.severe("Ошибка получения оплаченного уровня БП игрока " + player.getName() + ": " + e.getMessage());
+                return 0;
+            }
+        });
+    }
+
+    /**
      * Установить количество собранных бесплатных наград игроку
      *
      * @param player Игрок
@@ -205,6 +267,26 @@ public class BattlePassDatabase {
                 statement.executeUpdate();
             } catch (SQLException e) {
                 Main.log.severe("Ошибка установки количества собранных бесплатных наград игроку " + player.getName() + ": " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Получить количество собранных бесплатных наград игрока
+     *
+     * @param player Игрок
+     * @return CompletableFuture Получение количества
+     */
+    public CompletableFuture<Integer> getFreeAwardsCollected(Player player) {
+        return CompletableFuture.supplyAsync(() -> {
+            UUID uuid = player.getUniqueId();
+            String getFreeAwardsCollectedSQL = "SELECT freeAwardsCollected FROM " + TABLE + " WHERE uuid = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(getFreeAwardsCollectedSQL)) {
+                statement.setString(1, uuid.toString());
+                return statement.executeQuery().getInt("freeAwardsCollected");
+            } catch (SQLException e) {
+                Main.log.severe("Ошибка получения количества собранных бесплатных наград игрока " + player.getName() + ": " + e.getMessage());
+                return 0;
             }
         });
     }
@@ -227,6 +309,64 @@ public class BattlePassDatabase {
             } catch (SQLException e) {
                 Main.log.severe("Ошибка установки количества собранных оплаченных наград игроку " + player.getName() + ": " + e.getMessage());
             }
+        });
+    }
+
+    /**
+     * Получить количество собранных оплаченных наград игрока
+     *
+     * @param player Игрок
+     * @return CompletableFuture Получение количества
+     */
+    public CompletableFuture<Integer> getPaidAwardsCollected(Player player) {
+        return CompletableFuture.supplyAsync(() -> {
+            UUID uuid = player.getUniqueId();
+            String getPaidAwardsCollectedSQL = "SELECT paidAwardsCollected FROM " + TABLE + " WHERE uuid = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(getPaidAwardsCollectedSQL)) {
+                statement.setString(1, uuid.toString());
+                return statement.executeQuery().getInt("paidAwardsCollected");
+            } catch (SQLException e) {
+                Main.log.severe("Ошибка получения количества собранных оплаченных наград игрока " + player.getName() + ": " + e.getMessage());
+                return 0;
+            }
+        });
+    }
+
+    /**
+     * Тест проверка наличия таблицы в БД
+     *
+     * @param tableName Название таблицы
+     * @return CompletableFuture Существование таблицы
+     */
+    public CompletableFuture<Boolean> tableExists(String tableName) {
+        return CompletableFuture.supplyAsync(() -> {
+            String tableExistsSQL = "SELECT * FROM information_schema.tables WHERE table_schema = ? AND table_name = ? LIMIT 1;";
+            try (PreparedStatement statement = connection.prepareStatement(tableExistsSQL)) {
+                statement.setString(1, DATABASE);
+                statement.setString(2, tableName);
+                return statement.executeQuery().next();
+            } catch (SQLException e) {
+                Main.log.severe("Ошибка проверки наличия таблицы " + tableName + " в базе данных: " + e.getMessage());
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Вывести все данные об игроке
+     *
+     * @param player Игрок
+     * @return CompletableFuture Вывод данных
+     */
+    @SuppressWarnings("deprecation")
+    public CompletableFuture<Void> printPlayerData(Player player) {
+        return CompletableFuture.runAsync(() -> {
+            player.sendMessage(ChatColor.GOLD + "Данные об игроке " + player.getName() + ":");
+            player.sendMessage(ChatColor.GOLD + "Оплачен ли БП: " + ChatColor.GREEN + isPaid(player).join());
+            player.sendMessage(ChatColor.GOLD + "Бесплатный уровень БП: " + ChatColor.GREEN + getFreeLevel(player).join());
+            player.sendMessage(ChatColor.GOLD + "Оплаченный уровень БП: " + ChatColor.GREEN + getPaidLevel(player).join());
+            player.sendMessage(ChatColor.GOLD + "Количество собранных бесплатных наград: " + ChatColor.GREEN + getFreeAwardsCollected(player).join());
+            player.sendMessage(ChatColor.GOLD + "Количество собранных оплаченных наград: " + ChatColor.GREEN + getPaidAwardsCollected(player).join());
         });
     }
 }
