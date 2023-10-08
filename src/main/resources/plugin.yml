@@ -1,5 +1,33 @@
-name: lite
+name: Lite
 version: '${project.version}'
 main: ru.incube.lite.Main
 api-version: '1.20'
 load: STARTUP
+commands:
+  incubepass:
+    description: Открыть меню боевого пропуска
+    usage: /<command> [help|test|reload]
+    aliases: [ ipass, icp, battlepass, bp, pass ]
+    permission: incube.battlepass.use
+    permission-message: '&cУ вас нет прав на использование этой команды!'
+permissions:
+  incube.battlepass.*:
+    description: Право на использование всех команд плагина
+    default: op
+    children:
+      incube.battlepass.use: true
+      incube.battlepass.help: true
+      incube.battlepass.test: true
+      incube.battlepass.reload: true
+  incube.battlepass.use:
+    description: Право на использование команды /incubepass
+    default: true
+  incube.battlepass.help:
+    description: Право на использование команды /incubepass help
+    default: true
+  incube.battlepass.test:
+    description: Право на использование команды /incubepass test
+    default: op
+  incube.battlepass.reload:
+    description: Право на использование команды /incubepass reload
+    default: op
