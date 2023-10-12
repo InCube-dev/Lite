@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.incube</groupId>
-    <artifactId>lite</artifactId>
+    <artifactId>Lite</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 

@@ -87,6 +87,7 @@ public class BattlePassDatabase {
                     + "player_name VARCHAR(64),"
                     + "isPaid BOOLEAN,"
                     + "experience INT,"
+                    + "expToNextLevel INT,"
                     + "freeBattlePassLevel INT,"
                     + "paidBattlePassLevel INT,"
                     + "freeAwardsCollected INT,"
@@ -124,7 +125,7 @@ public class BattlePassDatabase {
             }
 
             // Игрок начинает с первого уровня бесплатного БП
-            String insertPlayerSQL = "INSERT INTO " + TABLE + " (uuid, player_name, isPaid, experience, freeBattlePassLevel, paidBattlePassLevel, freeAwardsCollected, paidAwardsCollected) VALUES (?,?, false, 0, 1, 0, 0, 0);";
+            String insertPlayerSQL = "INSERT INTO " + TABLE + " (uuid, player_name, isPaid, experience, expToNextLevel, freeBattlePassLevel, paidBattlePassLevel, freeAwardsCollected, paidAwardsCollected) VALUES (?,?, false, 0, 0, 1, 0, 0, 0);";
             try (PreparedStatement statement = connection.prepareStatement(insertPlayerSQL)) {
                 statement.setString(1, player.getUniqueId().toString());
                 statement.setString(2, player.getName());
@@ -247,6 +248,55 @@ public class BattlePassDatabase {
                 }
             } catch (SQLException e) {
                 Main.log.severe(String.format("[%s] Ошибка получения опыта игрока %s: " + e.getMessage(), Main.plugin.getDescription().getName(), player.getName()));
+                return 0;
+            }
+        });
+    }
+
+    /**
+     * Установить количество опыта до следующего уровня игроку
+     * Опыт до следующего уровня не может быть меньше 0
+     *
+     * @param player         Игрок
+     * @param expToNextLevel Опыт до следующего уровня
+     * @return CompletableFuture Установка опыта до следующего уровня
+     */
+    public CompletableFuture<Void> setExperienceToNextLevel(Player player, int expToNextLevel) {
+        return CompletableFuture.runAsync(() -> {
+            UUID uuid = player.getUniqueId();
+            String setExpToNextLevelSQL = "UPDATE " + TABLE + " SET expToNextLevel = ? WHERE uuid = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(setExpToNextLevelSQL)) {
+                statement.setInt(1, Math.max(expToNextLevel, 0));
+                statement.setString(2, uuid.toString());
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                Main.log.severe(String.format("[%s] Ошибка установки опыта до следующего уровня игроку %s: " + e.getMessage(), Main.plugin.getDescription().getName(), player.getName()));
+            }
+        });
+    }
+
+    /**
+     * Получить количество опыта до следующего уровня игрока
+     *
+     * @param player Игрок
+     * @return CompletableFuture Получение опыта до следующего уровня
+     */
+    public CompletableFuture<Integer> getExperienceToNextLevel(Player player) {
+        return CompletableFuture.supplyAsync(() -> {
+            UUID uuid = player.getUniqueId();
+            String getExpToNextLevelSQL = "SELECT expToNextLevel FROM " + TABLE + " WHERE uuid = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(getExpToNextLevelSQL)) {
+                statement.setString(1, uuid.toString());
+                ResultSet resultSet = statement.executeQuery();
+
+                if (resultSet.next()) {
+                    return resultSet.getInt("expToNextLevel");
+                } else {
+                    Main.log.warning(String.format("[%s] Игрок %s не найден в базе данных", Main.plugin.getDescription().getName(), player.getName()));
+                    return 0;
+                }
+            } catch (SQLException e) {
+                Main.log.severe(String.format("[%s] Ошибка получения опыта до следующего уровня игрока %s: " + e.getMessage(), Main.plugin.getDescription().getName(), player.getName()));
                 return 0;
             }
         });
@@ -478,6 +528,7 @@ public class BattlePassDatabase {
             player.sendMessage("Данные об игроке " + player.getName() + ":");
             player.sendMessage("Платный ли БП: " + ChatColor.GREEN + isPaid(player).join());
             player.sendMessage("Опыт: " + ChatColor.GREEN + getExperience(player).join());
+            player.sendMessage("Опыт до следующего уровня: " + ChatColor.GREEN + getExperienceToNextLevel(player).join());
             player.sendMessage("Уровень бесплатного БП: " + ChatColor.GREEN + getFreeLevel(player).join());
             player.sendMessage("Уровень платного БП: " + ChatColor.GREEN + getPaidLevel(player).join());
             player.sendMessage("Количество собранных наград бесплатного БП: " + ChatColor.GREEN + getFreeAwardsCollected(player).join());
