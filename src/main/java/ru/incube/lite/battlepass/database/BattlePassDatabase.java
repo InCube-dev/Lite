@@ -261,7 +261,7 @@ public class BattlePassDatabase {
      * @param expToNextLevel Опыт до следующего уровня
      * @return CompletableFuture Установка опыта до следующего уровня
      */
-    public CompletableFuture<Void> setExpToNextLevel(Player player, int expToNextLevel) {
+    public CompletableFuture<Void> setExperienceToNextLevel(Player player, int expToNextLevel) {
         return CompletableFuture.runAsync(() -> {
             UUID uuid = player.getUniqueId();
             String setExpToNextLevelSQL = "UPDATE " + TABLE + " SET expToNextLevel = ? WHERE uuid = ?;";
@@ -281,7 +281,7 @@ public class BattlePassDatabase {
      * @param player Игрок
      * @return CompletableFuture Получение опыта до следующего уровня
      */
-    public CompletableFuture<Integer> getExpToNextLevel(Player player) {
+    public CompletableFuture<Integer> getExperienceToNextLevel(Player player) {
         return CompletableFuture.supplyAsync(() -> {
             UUID uuid = player.getUniqueId();
             String getExpToNextLevelSQL = "SELECT expToNextLevel FROM " + TABLE + " WHERE uuid = ?;";
@@ -528,7 +528,7 @@ public class BattlePassDatabase {
             player.sendMessage("Данные об игроке " + player.getName() + ":");
             player.sendMessage("Платный ли БП: " + ChatColor.GREEN + isPaid(player).join());
             player.sendMessage("Опыт: " + ChatColor.GREEN + getExperience(player).join());
-            player.sendMessage("Опыт до следующего уровня: " + ChatColor.GREEN + getExpToNextLevel(player).join());
+            player.sendMessage("Опыт до следующего уровня: " + ChatColor.GREEN + getExperienceToNextLevel(player).join());
             player.sendMessage("Уровень бесплатного БП: " + ChatColor.GREEN + getFreeLevel(player).join());
             player.sendMessage("Уровень платного БП: " + ChatColor.GREEN + getPaidLevel(player).join());
             player.sendMessage("Количество собранных наград бесплатного БП: " + ChatColor.GREEN + getFreeAwardsCollected(player).join());
